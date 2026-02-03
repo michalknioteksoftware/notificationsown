@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notifications List</title>
+    <title>Notifications Sent</title>
     <style>
         * {
             margin: 0;
@@ -40,6 +40,31 @@
         .header p {
             color: #666;
             font-size: 1.1em;
+        }
+        
+        .header-nav {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-link {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        
+        .nav-link:hover {
+            background: #5568d3;
+        }
+        
+        .nav-link.active {
+            background: #764ba2;
         }
         
         .notifications-list {
@@ -85,11 +110,11 @@
             font-size: 0.9em;
         }
         
-        .notification-from-to {
-            display: flex;
+        .notification-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin-bottom: 15px;
-            flex-wrap: wrap;
         }
         
         .notification-field {
@@ -110,6 +135,34 @@
             color: #555;
             font-size: 1em;
             word-break: break-word;
+        }
+        
+        .sent-status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .sent-status.true {
+            background: #10b981;
+            color: white;
+        }
+        
+        .sent-status.false {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .channel-badge {
+            display: inline-block;
+            background: #764ba2;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
         }
         
         .notification-message {
@@ -179,8 +232,8 @@
                 gap: 10px;
             }
             
-            .notification-from-to {
-                flex-direction: column;
+            .notification-info {
+                grid-template-columns: 1fr;
                 gap: 10px;
             }
         }
@@ -189,52 +242,78 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📬 Notifications</h1>
-            <p>List of all notifications stored in the database</p>
-            <div class="header-nav" style="margin-top: 20px; display: flex; gap: 10px;">
-                <a href="{{ route('notifications.index') }}" class="nav-link active" style="display: inline-block; background: #764ba2; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; transition: background 0.3s;">📬 All Notifications</a>
-                <a href="{{ route('notifications.sent') }}" class="nav-link" style="display: inline-block; background: #667eea; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; transition: background 0.3s;">📤 Sent Notifications</a>
+            <h1>📤 Notifications Sent</h1>
+            <p>List of all notifications that have been sent through channels</p>
+            <div class="header-nav">
+                <a href="{{ route('notifications.index') }}" class="nav-link">📬 All Notifications</a>
+                <a href="{{ route('notifications.sent') }}" class="nav-link active">📤 Sent Notifications</a>
             </div>
         </div>
         
         <div class="notifications-list">
-            @if($notifications->count() > 0)
-                @foreach($notifications as $notification)
+            @if($notificationsSent->count() > 0)
+                @foreach($notificationsSent as $sent)
                     <div class="notification-item">
                         <div class="notification-header">
-                            <span class="notification-id">#{{ $notification->id }}</span>
+                            <span class="notification-id">#{{ $sent->id }}</span>
                             <span class="notification-date">
-                                {{ $notification->created_at->format('Y-m-d H:i:s') }}
+                                Sent at: {{ $sent->created_at->format('Y-m-d H:i:s') }}
                             </span>
                         </div>
                         
-                        <div class="notification-from-to">
+                        <div class="notification-info">
                             <div class="notification-field">
-                                <strong>From:</strong>
-                                <span>{{ $notification->from }}</span>
+                                <strong>Notification ID:</strong>
+                                <span>#{{ $sent->notification_id }}</span>
                             </div>
                             
                             <div class="notification-field">
-                                <strong>To:</strong>
-                                <span>{{ $notification->to }}</span>
+                                <strong>Channel:</strong>
+                                <span class="channel-badge">{{ $sent->channel }}</span>
+                            </div>
+                            
+                            <div class="notification-field">
+                                <strong>Sent Status:</strong>
+                                <span class="sent-status {{ $sent->sent ? 'true' : 'false' }}">
+                                    {{ $sent->sent ? '✓ Sent' : '✗ Not Sent' }}
+                                </span>
                             </div>
                         </div>
                         
-                        <div class="notification-message">
-                            <strong>Message:</strong>
-                            <p>{{ $notification->message }}</p>
-                        </div>
+                        @if($sent->notification)
+                            <div class="notification-info" style="margin-top: 15px;">
+                                <div class="notification-field">
+                                    <strong>From:</strong>
+                                    <span>{{ $sent->notification->from }}</span>
+                                </div>
+                                
+                                <div class="notification-field">
+                                    <strong>To:</strong>
+                                    <span>{{ $sent->notification->to }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="notification-message">
+                                <strong>Message:</strong>
+                                <p>{{ $sent->notification->message }}</p>
+                            </div>
+                        @else
+                            <div class="notification-message" style="background: #fee; border-color: #fcc;">
+                                <strong>⚠️ Warning:</strong>
+                                <p>Related notification not found (may have been deleted)</p>
+                            </div>
+                        @endif
                     </div>
                 @endforeach
             @else
                 <div class="empty-state">
-                    <h2>No notifications yet</h2>
-                    <p>Notifications will appear here once they are created via the API.</p>
+                    <h2>No sent notifications yet</h2>
+                    <p>Notifications will appear here once they are processed by the worker.</p>
                 </div>
             @endif
             
             <div style="text-align: center; margin-top: 30px;">
-                <a href="{{ route('notifications.index') }}" class="refresh-btn">🔄 Refresh</a>
+                <a href="{{ route('notifications.sent') }}" class="refresh-btn">🔄 Refresh</a>
             </div>
         </div>
     </div>

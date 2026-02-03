@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Notification;
+use App\NotificationSent;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
@@ -57,5 +58,19 @@ class NotifyController extends Controller
         $notifications = Notification::orderBy('created_at', 'desc')->get();
         
         return view('notifications.index', compact('notifications'));
+    }
+
+    /**
+     * Display a listing of notifications sent
+     *
+     * @return \Illuminate\View\View
+     */
+    public function sent()
+    {
+        $notificationsSent = NotificationSent::with('notification')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        return view('notifications.sent', compact('notificationsSent'));
     }
 }

@@ -19,4 +19,12 @@ class Notification extends Model
         'to',
         'message',
     ];
+
+    /**
+     * Get the sent records for the notification.
+     */
+    public function sentRecords()
+    {
+        return $this->hasMany(NotificationSent::class);
+    }
 }
